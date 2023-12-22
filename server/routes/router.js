@@ -7,5 +7,8 @@ const controller = require('../controller/controller')
 router.post('/api/register', controller.register);
 router.post('/api/login', controller.login); 
 
+// get single user
+router.get('/api/user/:id', controller.getUser); 
+
 
 module.exports = router;

@@ -9,14 +9,14 @@ exports.register = async (req, res) => {
         return;
     }
 
-    const phone = req.body.phone; 
-    const password = req.body.password; 
-    if(phone.length !== 10){
-        res.status(400).send({message: "Enter valid phone number"})
-        return; 
-    }else if(password.length <= 6 || password.length >= 16) {
-        res.status(400).send({ message: "enter valid password"})
-        return; 
+    const phone = req.body.phone;
+    const password = req.body.password;
+    if (phone.length !== 10) {
+        res.status(400).send({ message: "Enter valid phone number" })
+        return;
+    } else if (password.length <= 6 || password.length >= 16) {
+        res.status(400).send({ message: "enter valid password" })
+        return;
     }
 
     // let hash = ''; 
@@ -60,12 +60,12 @@ exports.login = (req, res) => {
     const phone = req.body.phone;
     const password = req.body.password;
 
-    if(phone.length !== 10){
-        res.status(400).send({message: "Enter valid phone number"})
-        return; 
-    }else if(password.length <= 6 || password.length >= 16) {
-        res.status(400).send({ message: "enter valid password"})
-        return; 
+    if (phone.length !== 10) {
+        res.status(400).send({ message: "Enter valid phone number" })
+        return;
+    } else if (password.length <= 6 || password.length >= 16) {
+        res.status(400).send({ message: "enter valid password" })
+        return;
     }
 
     userdb.findOne({ phone: phone })
@@ -73,10 +73,10 @@ exports.login = (req, res) => {
             if (!user) {
                 res.status(404).send({ message: "Not found user with phone " + phone })
             } else {
-                if(user.password === password) {
+                if (user.password === password) {
                     res.status(200).send(user);
                 } else {
-                    res.status(401).send({message:"Password is incorrect"});
+                    res.status(401).send({ message: "Password is incorrect" });
                 }
             }
         })
@@ -86,5 +86,16 @@ exports.login = (req, res) => {
 }
 
 
-// 
+// get user
+exports.getUser = (req, res) => {
+    const id = req.params.id;
+
+    userdb.findById(id)
+        .then(data => {
+            res.status(200).json({ data })
+        })
+        .catch((error) => {
+            res.status(401).send({ message: error.message })
+        })
+}
 
