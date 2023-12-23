@@ -33,6 +33,8 @@ exports.register = async (req, res) => {
     const user = new userdb({
         phone: req.body.phone,
         password: req.body.password,
+        publisher: req.body.publisher,
+        publicationName: req.body.publicationName,
     })
 
     // save user in the database

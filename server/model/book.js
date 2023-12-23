@@ -7,11 +7,11 @@ const bookSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        // required: true,
     },
     price: {
         type: Number,
         required: true,
-
     },
     publicationName: {
         type: String,
@@ -24,7 +24,6 @@ const bookSchema = new mongoose.Schema({
     author: {
         type: String,
         default: 'unknown',
-
     },
     description: {
         type: String,
@@ -35,7 +34,6 @@ const bookSchema = new mongoose.Schema({
         type: Number,
         // required: true,
     }
-
 })
 
 module.exports = mongoose.model('bookdb', bookSchema);

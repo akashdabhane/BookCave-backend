@@ -4,7 +4,7 @@ const bookController = require('../controller/bookController');
 
 // API
 // add book
-bookRouter.post('/api/book', bookController.addBook);
+bookRouter.post('/api/add-book', bookController.addBook);
 
 // delete book
 bookRouter.delete('/api/book/:id', bookController.deleteBook);

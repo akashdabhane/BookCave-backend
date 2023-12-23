@@ -16,7 +16,8 @@ exports.addBook = (req, res) => {
         image: req.body.image,
         publisher: req.body.publisher,
         description: req.body.description,
-        availablePieces: req.body.availablePieces,
+        availablePieces: req.body.quantity,
+        publisheredBy: req.body.publisheredBy
     })
 
     // save the book info into database
@@ -75,7 +76,7 @@ exports.updateBookInfo = async (req, res) => {
 // get book info 
 exports.getSingleBook = async (req, res) => {
     const id = req.params.id;
-    console.log(id); 
+    console.log(id);
 
     try {
         const bookInfo = await bookdb.findById(id);
