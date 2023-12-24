@@ -6,8 +6,14 @@ const bookSchema = new mongoose.Schema({
         required: true
     },
     image: {
-        type: String,
-        // required: true,
+        public_id: {
+            type: String,
+            // required: true,
+        }, 
+        url: {
+            type: String,
+            // required: true,
+        }
     },
     price: {
         type: Number,
@@ -19,7 +25,7 @@ const bookSchema = new mongoose.Schema({
     },
     publisheredBy: {
         type: mongoose.Types.ObjectId,
-        required: true
+        // required: true
     },
     author: {
         type: String,

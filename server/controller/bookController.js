@@ -1,33 +1,48 @@
 const bookdb = require('../model/book');
+const cloudinary = require('../utils/cloudinary');
 
 // add book
-exports.addBook = (req, res) => {
-    // validate request
-    if (!req.body) {
-        res.status(400).send({ message: "Content can not be empty" });
-        return;
+exports.addBook = async (req, res) => {
+
+    try {
+        // validate request
+        if (!req.body) {
+            res.status(400).send({ message: "Content can not be empty" });
+            return;
+        }
+
+        const { image } = req.body;
+        const result = await cloudinary.uploader.upload(image, {
+            folder: "BookCave",
+        })
+
+        // book info
+        const book = new bookdb({
+            title: req.body.title,
+            price: req.body.price,
+            author: req.body.author,
+            image: {
+                public_id: result.public_id,
+                url: result.secure_url
+            },
+            publisher: req.body.publisher,
+            description: req.body.description,
+            availablePieces: req.body.quantity,
+            publisheredBy: req.body.publisheredBy
+        })
+
+        // save the book info into database
+        book.save()
+            .then(data => {
+                res.status(200).json({ message: "book info added successfully", data })
+            })
+            .catch(error => {
+                res.status(400).json({ message: error.message || "some error occured while inserting data" })
+            })
     }
-
-    // book info
-    const book = new bookdb({
-        title: req.body.title,
-        price: req.body.price,
-        author: req.body.author,
-        image: req.body.image,
-        publisher: req.body.publisher,
-        description: req.body.description,
-        availablePieces: req.body.quantity,
-        publisheredBy: req.body.publisheredBy
-    })
-
-    // save the book info into database
-    book.save(book)
-        .then(data => {
-            res.status(200).json({ message: "book info added successfully", data })
-        })
-        .catch(error => {
-            res.status(400).json({ message: error.message || "some error occured while inserting data" })
-        })
+    catch(error) {
+        console.log("Error : ", error);
+    }
 }
 
 
