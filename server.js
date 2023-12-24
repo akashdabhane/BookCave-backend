@@ -26,6 +26,7 @@ app.use(express.json());
 // load routers
 app.use('/', require("./server/routes/router")); 
 app.use('/', require('./server/routes/bookRouter')); 
+app.use('/', require('./server/routes/emailRouter')); 
 
 app.listen(PORT, () => {
     console.log(`server is running of port ${PORT}`);
