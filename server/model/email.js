@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const emailSchema = new mongoose.Schema({
     fullname: {
         type: String,
-        required: [true, "name is required!"],
+        required: true,
         minlength: 3
     },
     phone: {
         type: Number,
-        required: [true, "phone no. is required!"],
+        required: true,
         length: 10,
     },
     email: {

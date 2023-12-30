@@ -101,3 +101,30 @@ exports.getUser = (req, res) => {
         })
 }
 
+
+exports.updateUserInfo = (req, res) => {
+    const { firstname, lastname, email, phoneNumber, password, address } = req.body;
+
+    const user = new userdb({
+        firstName: firstname,
+        lastName: lastname,
+        phone: phoneNumber,
+        password,
+        email,
+        address,
+    })
+
+    try {
+        user.save()
+            .then(data => {
+                res.status(200).send(data)
+            })
+            .catch(error => {
+                res.status(500).json({ message: error.message || "Some error occure while updating user information" })
+            })
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+
