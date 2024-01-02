@@ -5,18 +5,14 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'User'
     }, // this is the User model that created the Order
-    products: [
-        {
-            product: {
-                type: mongoose.Types.ObjectId,
-                ref: 'Product'
-            },
-            quantity: {
-                type: Number,
-                required: true
-            }
-        }
-    ],
+    productId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Product'
+    },
+    quantity: {
+        type: Number,
+        // required: true
+    },
     totalPrice: {
         type: Number,
     },

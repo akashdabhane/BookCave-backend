@@ -27,6 +27,7 @@ app.use(express.json());
 app.use('/', require("./server/routes/router")); 
 app.use('/', require('./server/routes/bookRouter')); 
 app.use('/', require('./server/routes/emailRouter')); 
+app.use('/', require('./server/routes/ordersRoute')); 
 
 app.listen(PORT, () => {
     console.log(`server is running of port ${PORT}`);
