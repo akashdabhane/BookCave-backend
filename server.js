@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const bodyparser = require('body-parser');
-const connectDB = require("./server/database/connection"); 
+const connectDB = require("./src/database/connection"); 
 let cors = require('cors')
 
 const app = express();
@@ -24,10 +24,10 @@ app.use(bodyparser.urlencoded({ extended: true }))
 app.use(express.json()); 
 
 // load routers
-app.use('/', require("./server/routes/router")); 
-app.use('/', require('./server/routes/bookRouter')); 
-app.use('/', require('./server/routes/emailRouter')); 
-app.use('/', require('./server/routes/ordersRoute')); 
+app.use('/', require("./src/routes/router")); 
+app.use('/', require('./src/routes/bookRouter')); 
+app.use('/', require('./src/routes/emailRouter')); 
+app.use('/', require('./src/routes/ordersRoute')); 
 
 app.listen(PORT, () => {
     console.log(`server is running of port ${PORT}`);

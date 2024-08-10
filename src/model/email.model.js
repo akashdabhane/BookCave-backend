@@ -23,7 +23,7 @@ const emailSchema = new mongoose.Schema({
         type: String,
         required: [true, "email body is required!"]
     }
-})
+}, { timestamps: true });
 
 const emaildb = mongoose.model('emaildb', emailSchema);
 

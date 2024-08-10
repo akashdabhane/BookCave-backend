@@ -1,4 +1,4 @@
-const bookdb = require('../model/book');
+const bookdb = require('../model/book.model');
 const cloudinary = require('../utils/cloudinary');
 
 // add book

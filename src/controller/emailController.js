@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const emaildb = require('../model/email'); 
+const emaildb = require('../model/email.model'); 
 
 
 exports.sendEmail = (req, res) => {

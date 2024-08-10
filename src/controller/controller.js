@@ -1,4 +1,4 @@
-const userdb = require('../model/user');
+const userdb = require('../model/user.model');
 // const bcrypt = require('bcrypt');
 
 // register user

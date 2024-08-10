@@ -1,4 +1,4 @@
-const ordersdb = require('../model/orders')
+const ordersdb = require('../model/order.model')
 
 
 exports.createOrder = (req, res) => {
