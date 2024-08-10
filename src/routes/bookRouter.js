@@ -1,6 +1,6 @@
 const express = require('express');
 const bookRouter = express.Router();
-const bookController = require('../controller/bookController');
+const bookController = require('../controller/book.controller');
 
 // API
 // add book
