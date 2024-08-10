@@ -4,14 +4,14 @@ const controller = require('../controller/user.controller')
 
 
 // API 
-router.post('/api/register', controller.register);
-router.post('/api/login', controller.login); 
+router.post('/register', controller.register);
+router.post('/login', controller.login); 
 
 // get single user
-router.get('/api/user/:id', controller.getUser); 
+router.get('/user/:id', controller.getUser); 
 
 // update users info
-router.put('/api/user/:id', controller.updateUserInfo)
+router.put('/user/:id', controller.updateUserInfo)
 
 
 module.exports = router;

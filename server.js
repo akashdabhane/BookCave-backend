@@ -24,10 +24,10 @@ app.use(bodyparser.urlencoded({ extended: true }))
 app.use(express.json()); 
 
 // load routers
-app.use('/', require("./src/routes/router")); 
-app.use('/', require('./src/routes/bookRouter')); 
-app.use('/', require('./src/routes/emailRouter')); 
-app.use('/', require('./src/routes/ordersRoute')); 
+app.use('/api/v1/users', require("./src/routes/user.routes")); 
+app.use('/api/v1/books', require('./src/routes/book.routes')); 
+app.use('/api/v1/emails', require('./src/routes/email.routes')); 
+app.use('/api/v1/orders', require('./src/routes/order.routes')); 
 
 app.listen(PORT, () => {
     console.log(`server is running of port ${PORT}`);

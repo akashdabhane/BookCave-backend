@@ -4,10 +4,10 @@ const ordersController = require('../controller/order.controller')
 
 
 // create order 
-ordersRouter.post('/api/orders/create-order', ordersController.createOrder); 
+ordersRouter.post('/create-order', ordersController.createOrder); 
 
 // get all orders of user
-ordersRouter.get('/api/orders/:id', ordersController.getAllOrdersUser)
+ordersRouter.get('/:id', ordersController.getAllOrdersUser)
 
 
 module.exports = ordersRouter
