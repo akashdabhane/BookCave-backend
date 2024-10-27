@@ -3,12 +3,12 @@ const jwt = require("jsonwebtoken");
 
 const verifyJWT = async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        const token = req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.accessToken;
 
         if (!token) {
             return res.status(401).json({ message: "Unauthorized request" });
         }
-
+        console.log('token 11', token);
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
         const user = await userdb.findById(decodedToken?._id).select("-password -refreshToken")

@@ -15,6 +15,9 @@ router.post('/refresh-access-token', controller.refreshAccessToken);
 // get single user
 router.get('/user/:id', verifyJWT, controller.getUser);
 
+// get logged in user
+router.get('/', verifyJWT, controller.getLoggedInUser);
+
 // update users info
 router.put('/update-info', verifyJWT, controller.updateUserInfo)
 

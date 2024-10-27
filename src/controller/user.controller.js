@@ -25,7 +25,8 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
 const options = {
     httpOnly: true,
-    secure: true
+    secure: false,
+    sameSite: 'None'
 }
 
 // register user
@@ -90,7 +91,13 @@ exports.login = asyncHandler(async (req, res) => {
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", refreshToken, options)
             .json(
-                new ApiResponse(200, loggedInUser, "User logged in successfully")
+                new ApiResponse(200,
+                    {
+                        "accessToken": accessToken,
+                        "refreshToken": refreshToken,
+                        loggedInUser
+                    },
+                    "User logged in successfully")
             )
     } catch (error) {
         throw new ApiError(500, error.message || "Failed to login user");

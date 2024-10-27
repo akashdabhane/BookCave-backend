@@ -10,7 +10,12 @@ const app = express();
 // log requests
 app.use(morgan('tiny'));
 
-app.use(cors());
+app.use(cors({
+    origin: ['https://bookcave.vercel.app', 'http://localhost:3000'], // allow requests from this origin
+    credentials: true, // allow cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // parse request to body parser 
 app.use(bodyparser.urlencoded({ extended: true }))
