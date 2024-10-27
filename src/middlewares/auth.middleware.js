@@ -1,7 +1,7 @@
 const userdb = require("../model/user.model");
 const jwt = require("jsonwebtoken");
 
-export const verifyJWT = async (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
 
@@ -23,3 +23,5 @@ export const verifyJWT = async (req, res, next) => {
         return res.status(401).json({ message: error?.message || "Invalid access token" });
     }
 }
+
+module.exports = verifyJWT;

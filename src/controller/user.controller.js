@@ -1,130 +1,210 @@
 const userdb = require('../model/user.model');
-// const bcrypt = require('bcrypt');
+const ApiError = require('../utils/ApiError');
+const ApiResponse = require('../utils/ApiResponse');
+const asyncHandler = require('../utils/asyncHandler');
+const validateMongodbId = require("../utils/validateMongodbId");
+const jwt = require('jsonwebtoken');
+
+
+const generateAccessAndRefereshTokens = async (userId) => {
+    try {
+        const user = await userdb.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false });
+
+        return { accessToken, refreshToken };
+
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating referesh and access token")
+    }
+}
+
+const options = {
+    httpOnly: true,
+    secure: true
+}
 
 // register user
-exports.register = async (req, res) => {
-    // validate request
-    if (!req.body) {
-        res.status(400).send({ message: "Content can not be empty" });
-        return;
+exports.register = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (
+        [email, password].some((field) => field?.trim() === "" || field.trim() === undefined || field.trim() === null)
+    ) {
+        throw new ApiError(400, "Email & password fields are required")
     }
-
-    const phone = req.body.phone;
-    const password = req.body.password;
-    if (phone.length !== 10) {
-        res.status(400).send({ message: "Enter valid phone number" })
-        return;
-    } else if (password.length <= 6 || password.length >= 16) {
-        res.status(400).send({ message: "enter valid password" })
-        return;
-    }
-
-    // let hash = ''; 
-    // bcrypt.hash(req.body.password, 10, (err, hash) => {
-    //     if (err) {
-    //         console.error(err);
-    //     } else {
-    //         // Store the hash in your database or use it as needed
-    //         console.log('Hashed Password:', hash);
-    //     }
-    // });
-
-    // new user
-    const user = new userdb({
-        phone: req.body.phone,
-        password: req.body.password,
-        publisher: req.body.publisher,
-        publicationName: req.body.publicationName,
-    })
-
-    // save user in the database
-    await user.save()
-        .then(data => {
-            res.send(data)
-        })
-        .catch(error => {
-            console.error("Error during user registration:", error);
-            res.status(500).send({
-                message: error
-            });
-        });
-}
-
-
-// login
-exports.login = (req, res) => {
-    // validate request
-    if (!req.body) {
-        res.status(400).send({ message: "Content can not be empty" });
-        return;
-    }
-
-    const phone = req.body.phone;
-    const password = req.body.password;
-
-    if (phone.length !== 10) {
-        res.status(400).send({ message: "Enter valid phone number" })
-        return;
-    } else if (password.length <= 6 || password.length >= 16) {
-        res.status(400).send({ message: "enter valid password" })
-        return;
-    }
-
-    userdb.findOne({ phone: phone })
-        .then(user => {
-            if (!user) {
-                res.status(404).send({ message: "Not found user with phone " + phone })
-            } else {
-                if (user.password === password) {
-                    res.status(200).send(user);
-                } else {
-                    res.status(401).send({ message: "Password is incorrect" });
-                }
-            }
-        })
-        .catch(error => {
-            res.status(500).send({ message: error.message || "Error occured while retrieving user information" })
-        })
-}
-
-
-// get user
-exports.getUser = (req, res) => {
-    const id = req.params.id;
-
-    userdb.findById(id)
-        .then(data => {
-            res.status(200).json({ data })
-        })
-        .catch((error) => {
-            res.status(401).send({ message: error.message })
-        })
-}
-
-
-exports.updateUserInfo = (req, res) => {
-    const { firstname, lastname, email, phoneNumber, password, address } = req.body;
-
-    const user = new userdb({
-        firstName: firstname,
-        lastName: lastname,
-        phone: phoneNumber,
-        password,
-        email,
-        address,
-    })
 
     try {
-        user.save()
-            .then(data => {
-                res.status(200).send(data)
-            })
-            .catch(error => {
-                res.status(500).json({ message: error.message || "Some error occure while updating user information" })
-            })
+        const existingUser = await userdb.findOne({ email });
+
+        if (existingUser) throw new ApiError(400, "User with email already exist.");
+
+        // new user
+        const user = await userdb.create({
+            email,
+            password
+        });
+
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(201, { data: user }, "User registered successfully")
+            )
     } catch (error) {
-        res.status(500).send(error);
+        throw new ApiError(500, error.message || "Failed to register user");
     }
-}
+})
 
+// login
+exports.login = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
+    if (
+        [email, password].some((field) =>
+            field?.trim() === "" || field.trim() === undefined || field.trim() === null)
+    ) {
+        throw new ApiError(400, "Email & password fields are required")
+    }
+
+    try {
+        const user = await userdb.findOne({ email });
+        if (!user) {
+            throw new ApiError(404, "User not found")
+        }
+
+        const isPasswordCorrect = user.isPasswordCorrect(password);
+        if (!isPasswordCorrect) {
+            throw new ApiError(401, "Invalid password")
+        }
+
+        const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id)
+
+        const loggedInUser = await userdb.findById(user._id).select("-password -refreshToken")
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(
+                new ApiResponse(200, loggedInUser, "User logged in successfully")
+            )
+    } catch (error) {
+        throw new ApiError(500, error.message || "Failed to login user");
+    }
+})
+
+exports.logoutUser = asyncHandler(async (req, res) => {
+    await userdb.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1 // this removes the field from document
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "User logged Out"))
+})
+
+exports.refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request");
+    }
+
+    try {
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+
+        const user = await userdb.findById(decodedToken?._id);
+
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token");
+        }
+
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Refresh token is expired or used");
+        }
+
+        const { accessToken, newRefreshToken } = await generateAccessAndRefereshTokens(user._id);
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(200, { accessToken, refreshToken: newRefreshToken }, "Access token refreshed")
+            )
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token")
+    }
+})
+
+// get user
+exports.getUser = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    validateMongodbId(id);
+
+    const user = await userdb.findById(id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "User retrieved successfully")
+        )
+})
+
+// get logged in user
+exports.getLoggedInUser = asyncHandler(async (req, res) => {
+    const user = await userdb.findById(req.user._id)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "User retrieved successfully")
+        )
+})
+
+// update user info
+exports.updateUserInfo = asyncHandler(async (req, res) => {
+    if (!req.body) {
+        throw new ApiError(400, "Content can not be empty")
+    }
+    const userId = req.user._id;
+
+    try {
+        const updatedUser = await userdb.findByIdAndUpdate(userId,
+            {
+                $set: {
+                    firstName: req?.body?.firstname,
+                    lastName: req?.body?.lastname,
+                    phone: req?.body?.phoneNumber,
+                    password: req?.body?.password,
+                    email: req?.body?.email,
+                    address: req?.body?.address,
+                }
+            }, { runValidation: false, new: true })
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, updatedUser, "User information updated successfully")
+            )
+    } catch (error) {
+        throw new ApiError(500, error.message || "Some error occure while updating user information");
+    }
+})

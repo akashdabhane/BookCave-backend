@@ -29,7 +29,7 @@ const bookSchema = new mongoose.Schema({
     bookCategory: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'categorydb',
-        required: true,
+        // required: true,
     }
     // publicationName: {
     //     type: String,

@@ -1,5 +1,9 @@
-require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const dotenv = require('dotenv');
+dotenv.config({
+    path: "./config.env"
+});
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -7,15 +11,23 @@ cloudinary.config({
     api_secret: process.env.CLOUD_SECRET,
 })
 
+// extract public id from url
+const extractPublicId = (url) => {
+    const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
+
 const uploadOnCloudinary = async (localFilePath) => {
     try {
         if (!localFilePath) return null;
 
         // upload the file on cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
-            folder: "social",
+            folder: "BookCave",
             resource_type: "auto",
         })
+
         // file uploaded on cloudinary
         fs.unlinkSync(localFilePath);
         return response;
@@ -26,7 +38,8 @@ const uploadOnCloudinary = async (localFilePath) => {
 }
 
 // Function to delete an image
-const deleteFromCloudinary = async (publicId) => {
+const deleteFromCloudinary = async (url) => {
+    const publicId = extractPublicId(url);
     if (!publicId) return null
 
     // delete the image from cloudinary
@@ -44,4 +57,3 @@ module.exports = {
     uploadOnCloudinary,
     deleteFromCloudinary,
 };
-

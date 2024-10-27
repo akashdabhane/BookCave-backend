@@ -1,116 +1,145 @@
 const bookdb = require('../model/book.model');
-const cloudinary = require('../utils/cloudinary');
+const {
+    uploadOnCloudinary,
+    deleteFromCloudinary
+} = require('../utils/cloudinary');
+const asyncHandler = require('../utils/asyncHandler');
+const ApiError = require('../utils/ApiError');
+const ApiResponse = require('../utils/ApiResponse');
+const validateMongodbId = require('../utils/validateMongodbId');
 
 // add book
-exports.addBook = async (req, res) => {
+exports.addBook = asyncHandler(async (req, res) => {
+    const { title, price, description } = req.body;
+
+    if ([title, price, description].some(item => {
+        !item || item === undefined || item === ""
+    })) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const localImagePath = req.file?.path;
+    if (!localImagePath) {
+        throw new ApiError(400, "Image is required");
+    }
 
     try {
-        // validate request
-        if (!req.body) {
-            res.status(400).send({ message: "Content can not be empty" });
-            return;
-        }
-
-        const { image } = req.body;
-        const result = await cloudinary.uploader.upload(image, {
-            folder: "BookCave",
-        })
+        const result = await uploadOnCloudinary(localImagePath);
 
         // book info
-        const book = new bookdb({
-            title: req.body.title,
-            price: req.body.price,
-            author: req.body.author,
-            image: {
-                public_id: result.public_id,
-                url: result.secure_url
-            },
-            publisher: req.body.publisher,
-            description: req.body.description,
-            availablePieces: req.body.quantity,
-            publisheredBy: req.body.publisheredBy
+        const book = await bookdb.create({
+            title,
+            price,
+            description,
+            imageUrl: result?.secure_url,
+            author: req.body?.author,
+            publisher: req.body?.publisher,
+            availablePieces: req.body?.quantity,
+            publisheredBy: req.body?.publisheredBy
         })
 
-        // save the book info into database
-        book.save()
-            .then(data => {
-                res.status(200).json({ message: "book info added successfully", data })
-            })
-            .catch(error => {
-                res.status(400).json({ message: error.message || "some error occured while inserting data" })
-            })
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, book, "book info added successfully")
+            )
     }
-    catch(error) {
-        console.log("Error : ", error);
+    catch (error) {
+        throw new ApiError(500, error.message || "some error occured while adding book")
     }
-}
+})
 
 
 // delete book info 
-exports.deleteBook = (req, res) => {
-    // validate request
-    if (!req.params) {
-        res.status(400).send({ message: "Content can not be empty" });
-        return;
+exports.deleteBook = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    validateMongodbId(id);
+
+    const book = await bookdb.findById(id);
+    if (!book) {
+        throw new ApiError(404, "Book not found");
     }
 
-    const id = req.params.id;
+    // delete book image from cloudinary
+    await deleteFromCloudinary(book.imageUrl);
 
-    bookdb.findByIdAndDelete(id)
-        .then(data => {
-            res.status(200).send("data deleted successfully")
-        })
-        .catch(error => {
-            res.status(404).json({ message: error.message || "some error occured while deleting info" })
-        })
-}
+    await bookdb.findByIdAndDelete(id)
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, {}, "Book deleted successfully")
+        )
+})
 
 
 // update book info
-exports.updateBookInfo = async (req, res) => {
+exports.updateBookInfo = asyncHandler(async (req, res) => {
     // validate request
     if (!req.body) {
-        res.status(400).send({ message: "Content can not be empty" });
-        return;
+        throw new ApiError(400, "Content can not be empty");
     }
+    const newData = req.body;
 
     try {
         const { id } = req.params;
-        const newData = req.body;
+        validateMongodbId(id);
+
+        const book = await bookdb.findById(id);
+        if(!book) {
+            throw new ApiError("Book not found");
+        }
 
         // Update data in the database
-        const updatedData = await bookdb.findByIdAndUpdate(id, newData, { new: true });
+        const updatedData = await bookdb.findByIdAndUpdate(id,
+            {
+                $set: newData
+            }, { new: true });
 
-        res.json(updatedData);
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, updatedData, "Book info updated successfully")
+            )
     } catch (error) {
-        res.status(500).json({ message: error.message || "Some error occured while updating data" })
+        throw new ApiError(500, error.message || "Some error occured while updating book info");
     }
-}
+})
 
 
 // get book info 
-exports.getSingleBook = async (req, res) => {
+exports.getSingleBook = asyncHandler(async (req, res) => {
     const id = req.params.id;
-    console.log(id);
+    validateMongodbId(id);
 
     try {
         const bookInfo = await bookdb.findById(id);
-        console.log(bookInfo);
-        res.status(200).json(bookInfo);
+
+        if(!bookInfo) {
+            throw new ApiError(404, "Book not found");
+        }
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, bookInfo, "Book info retrieved!")
+            )
     } catch (error) {
-        res.status(500).json({ message: error.message || "Some error occured while retriving data" })
+        throw new ApiError(500, error.message || "Some error occured while retriving book info");
     }
-}
+})
 
 
 // get all books 
-exports.getAllBooks = async (req, res) => {
+exports.getAllBooks = asyncHandler(async (req, res) => {
     try {
         const allBooks = await bookdb.find({});
-        res.status(200).json(allBooks);
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, allBooks, "All books are fetched successfully")
+            )
     } catch (error) {
-        res.status(500).json({ message: error.message || "Some error occured while retriving data" })
+        throw new ApiError(500, error.message || "Some error occured while retriving data")
     }
-}
-
-
+})
