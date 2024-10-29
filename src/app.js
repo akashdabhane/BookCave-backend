@@ -29,6 +29,8 @@ app.use('/api/v1/users', require("./routes/user.routes"));
 app.use('/api/v1/books', require('./routes/book.routes'));
 app.use('/api/v1/emails', require('./routes/email.routes'));
 app.use('/api/v1/orders', require('./routes/order.routes'));
+app.use('/api/v1/addresses', require('./routes/address.routes'));
+app.use('/api/v1/reviews', require('./routes/review.routes'));
 
 
 module.exports = app;

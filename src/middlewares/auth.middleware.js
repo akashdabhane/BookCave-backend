@@ -8,7 +8,7 @@ const verifyJWT = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ message: "Unauthorized request" });
         }
-        console.log('token 11', token);
+
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
         const user = await userdb.findById(decodedToken?._id).select("-password -refreshToken")

@@ -21,12 +21,16 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'processing', 'completed'],
+        enum: ['pending', 'processing', 'completed', 'cancelled'],
         default: 'pending'
+    },
+    address: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'addressdb',
+        required: [true, "addressId is required"]
     }
-
 }, { timestamps: true })
 
-const orderdb = mongoose.model('orderdb', orderSchema); 
+const orderdb = mongoose.model('orderdb', orderSchema);
 
 module.exports = orderdb;

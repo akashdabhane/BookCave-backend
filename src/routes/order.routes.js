@@ -9,9 +9,14 @@ ordersRouter.use(verifyJWT);
 // create order 
 ordersRouter.post('/create-order', ordersController.createOrder); 
 
-// get all orders of user
-ordersRouter.get('/:id', ordersController.getAllOrdersUser)
+// cancel order // :id is for order document
+ordersRouter.patch('/cancel-order/:id', ordersController.cancelOrder); 
 
+// get all orders of user
+ordersRouter.get('/all-orders', ordersController.getAllOrdersUser);
+
+// get single order details // :id is for order document
+ordersRouter.get('/:id', ordersController.getOrderDetails);
 
 module.exports = ordersRouter
 

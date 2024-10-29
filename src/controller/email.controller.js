@@ -43,4 +43,5 @@ exports.sendEmail = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new ApiError(400, error.message);
     }
-})
+});
+
