@@ -3,10 +3,15 @@ const mongoose = require('mongoose');
 const bookSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        
     },
     imageUrl: {
         type: String,
+        required: true,
+    },
+    mrp: {
+        type: Number,
         required: true,
     },
     price: {
@@ -26,20 +31,15 @@ const bookSchema = new mongoose.Schema({
         type: Number,
         required: true,
     }, 
-    bookCategory: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'categorydb',
-        // required: true,
+    category: {
+        type: String,
+        enum: ['educational', 'fiction', 'non-fiction', 'biography', 'autobiography', 'essay', 'encyclopedia'],
+        required: [true, "category is required"],
     }
-    // publicationName: {
-    //     type: String,
-    //     required: true
-    // },
-    // publisheredBy: {
-    //     type: mongoose.Types.ObjectId,
-    //     required: true
-    // },
 });
+
+// Create a text index on title, description and author fields
+bookSchema.index({ title: "text", description: "text", author: "text" });
 
 const bookdb = mongoose.model('bookdb', bookSchema);
 

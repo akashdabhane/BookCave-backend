@@ -21,5 +21,10 @@ bookRouter.get('/all-books', bookController.getAllBooks);
 // get book info
 bookRouter.get('/book-info/:id', bookController.getSingleBook);
 
+// search books
+bookRouter.get('/search', bookController.searchBooks);
+
+// recent viewed books
+bookRouter.post('/recent-viewed', bookController.getRecentlyViewedBooks);
 
 module.exports = bookRouter;
